@@ -75,16 +75,78 @@ async function seedDatabase() {
       imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80"
     });
 
+    await storage.createSection({
+      key: "mission",
+      titleEn: "Our Mission",
+      titleAr: "مهمتنا",
+      contentEn: "To provide every woman with the knowledge and natural tools she needs to feel confident and beautiful in her own skin, using sustainable and safe ingredients.",
+      contentAr: "تزويد كل امرأة بالمعرفة والأدوات الطبيعية التي تحتاجها لتشعر بالثقة والجمال في بشرتها، باستخدام مكونات مستدامة وآمنة.",
+      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createSection({
+      key: "vision",
+      titleEn: "Our Vision",
+      titleAr: "رؤيتنا",
+      contentEn: "To become the leading global platform for natural beauty education, bridging ancient wisdom with modern science for a healthier, more beautiful world.",
+      contentAr: "أن نصبح المنصة العالمية الرائدة للتعليم في مجال الجمال الطبيعي، ونجمع بين الحكمة القديمة والعلم الحديث من أجل عالم أكثر صحة وجمالاً.",
+      imageUrl: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&q=80"
+    });
+
     // 2. Articles
     await storage.createArticle({
-      titleEn: "The Ultimate Guide to Hydration",
-      titleAr: "الدليل الشامل للترطيب",
-      summaryEn: "Why keeping your skin hydrated is the key to a youthful glow.",
-      summaryAr: "لماذا يعتبر الحفاظ على ترطيب بشرتك مفتاح الإشراق الشبابي.",
-      contentEn: "Drinking water is not enough. You need to use the right moisturizers for your skin type...",
-      contentAr: "شرب الماء وحده لا يكفي. تحتاجين إلى استخدام المرطبات المناسبة لنوع بشرتك...",
+      titleEn: "The Magic of Coffee Body Scrubs",
+      titleAr: "سحر مقشرات الجسم بالقهوة",
+      summaryEn: "Exfoliate and energize your skin with your favorite morning brew.",
+      summaryAr: "قشري بشرتك ونشطيها باستخدام مشروبك الصباحي المفضل.",
+      contentEn: "Coffee grounds are an incredible natural exfoliant. The caffeine helps stimulate blood flow and can temporarily reduce the appearance of cellulite, leaving your skin silky smooth.",
+      contentAr: "تعتبر تفل القهوة مقشرًا طبيعيًا رائعًا. يساعد الكافيين على تحفيز تدفق الدم ويمكن أن يقلل مؤقتًا من ظهور السيلوليت، مما يترك بشرتك ناعمة كالحرير.",
       category: "skincare",
-      imageUrl: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1600091106710-539077977681?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "DIY Coffee Eye Serum",
+      titleAr: "سيروم العين بالقهوة منزلي الصنع",
+      summaryEn: "Say goodbye to dark circles with the power of caffeine.",
+      summaryAr: "ودعي الهالات السوداء بقوة الكافيين.",
+      contentEn: "Infusing oil with coffee creates a powerful serum for the delicate under-eye area. It helps reduce puffiness and brightens tired eyes almost instantly.",
+      contentAr: "يخلق نقع الزيت بالقهوة سيرومًا قويًا لمنطقة تحت العين الرقيقة. يساعد في تقليل الانتفاخ وتفتيح العيون المتعبة على الفور تقريبًا.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Coffee Scalp Scrub for Growth",
+      titleAr: "مقشر فروة الرأس بالقهوة للنمو",
+      summaryEn: "Stimulate your roots for thicker, healthier hair.",
+      summaryAr: "حفزي جذورك لشعر أكثر كثافة وصحة.",
+      contentEn: "Massaging coffee grounds into your scalp helps remove product buildup and stimulates hair follicles, encouraging faster and healthier hair growth.",
+      contentAr: "يساعد تدليك تفل القهوة في فروة رأسك على إزالة تراكم المنتجات وتحفيز بصيلات الشعر، مما يشجع على نمو الشعر بشكل أسرع وأكثر صحة.",
+      category: "haircare",
+      imageUrl: "https://images.unsplash.com/photo-1559591937-e624c9629b3d?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "The Science of Green Tea in Beauty",
+      titleAr: "علم الشاي الأخضر في الجمال",
+      summaryEn: "Antioxidant protection for a youthful complexion.",
+      summaryAr: "حماية مضادة للأكسدة لبشرة شبابية.",
+      contentEn: "Green tea is packed with polyphenols that protect the skin from environmental damage and soothe inflammation, making it a must-have in your natural arsenal.",
+      contentAr: "الشاي الأخضر مليء بالبوليفينول الذي يحمي البشرة من الأضرار البيئية ويهدئ الالتهاب، مما يجعله ضروريًا في ترسانتك الطبيعية.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Coconut Oil: The Ultimate Multi-Tasker",
+      titleAr: "زيت جوز الهند: المهام المتعددة القصوى",
+      summaryEn: "From makeup remover to deep conditioner.",
+      summaryAr: "من مزيل للمكياج إلى بلسم عميق.",
+      contentEn: "Coconut oil's lauric acid makes it antibacterial and highly moisturizing. It's the perfect natural solution for almost every beauty need.",
+      contentAr: "حمض اللوريك الموجود في زيت جوز الهند يجعله مضادًا للبكتيريا ومرطبًا للغاية. إنه الحل الطبيعي المثالي لكل احتياجات الجمال تقريبًا.",
+      category: "lifestyle",
+      imageUrl: "https://images.unsplash.com/photo-1544126592-807daa215a75?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -261,6 +323,127 @@ async function seedDatabase() {
       contentAr: "تحتوي معظم مزيلات العرق التجارية على مواد قد تسبب تهيج الجلد. المزيل الطبيعي المنزلي يساعد على التحكم في الرائحة ويترك إحساسًا بالانتعاش دون ضرر.",
       category: "lifestyle",
       imageUrl: "https://images.unsplash.com/photo-1556228578-8c7c0f44bb0b?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Bakuchiol: Nature's Retinol",
+      titleAr: "باكوتشيول: ريتينول الطبيعة",
+      summaryEn: "A gentle, plant-derived alternative to retinol for anti-aging.",
+      summaryAr: "بديل لطيف ومن أصل نباتي للريتينول لمكافحة الشيخوخة.",
+      contentEn: "Bakuchiol is a natural alternative to retinol from the babchi plant. It offers anti-aging benefits like reduced wrinkles and improved skin texture without the typical irritation associated with retinol.",
+      contentAr: "الباكوتشيول هو بديل طبيعي للريتينول مشتق من نبات البابتشي. يقدم فوائد مكافحة الشيخوخة مثل تقليل التجاعيد وتحسين ملمس البشرة دون التهيج المعتاد المرتبط بالريتينول.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "The Magic of Caffeine in Skincare",
+      titleAr: "سحر الكافيين في العناية بالبشرة",
+      summaryEn: "How caffeine helps de-puff eyes and boost circulation.",
+      summaryAr: "كيف يساعد الكافيين في تخفيف انتفاخ العينين وتعزيز الدورة الدموية.",
+      contentEn: "Caffeine constricts blood vessels, making it an excellent ingredient for de-puffing the under-eye area. It also helps improve overall skin radiance and microcirculation.",
+      contentAr: "يعمل الكافيين على تضييق الأوعية الدموية، مما يجعله مكونًا ممتازًا لتخفيف انتفاخ منطقة تحت العين. كما يساعد في تحسين إشراق البشرة العام والدورة الدموية الدقيقة.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1544126592-807daa215a75?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Honey & Milk: Cleopatra's Beauty Secret",
+      titleAr: "العسل والحليب: سر جمال كليوباترا",
+      summaryEn: "Classic ancient recipes for soft and radiant skin.",
+      summaryAr: "وصفات قديمة كلاسيكية لبشرة ناعمة ومشرقة.",
+      contentEn: "The combination of lactic acid from milk and humectants from honey creates a powerful moisturizing and exfoliating treatment. It rejuvenates cells and leaves skin incredibly soft.",
+      contentAr: "مزيج حمض اللاكتيك من الحليب والمرطبات من العسل يخلق علاجًا قويًا للترطيب والتقشير. يجدد الخلايا ويترك البشرة ناعمة بشكل لا يصدق.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1541416512301-35f1143ab7be?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Avocado & Olive Oil for Dry Skin",
+      titleAr: "الأفوكادو وزيت الزيتون للبشرة الجافة",
+      summaryEn: "Intense nourishment for dehydrated complexions.",
+      summaryAr: "تغذية مكثفة للبشرة المصابة بالجفاف.",
+      contentEn: "Rich in healthy fats and Vitamin E, avocado combined with olive oil provides a deep hydration boost, perfect for soothing dry and sensitive skin areas.",
+      contentAr: "غني بالدهون الصحية وفيتامين E، يوفر الأفوكادو الممزوج مع زيت الزيتون دفعة ترطيب عميقة، مما يجعله مثاليًا لتهدئة مناطق البشرة الجافة والحساسة.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1523263685509-57c1d0ef862?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Lemon & Honey for Brightening",
+      titleAr: "الليمون والعسل لتفتيح البشرة",
+      summaryEn: "Natural Vitamin C for evening out skin tone.",
+      summaryAr: "فيتامين سي طبيعي لتوحيد لون البشرة.",
+      contentEn: "Lemon juice acts as a natural bleach and astringent, while honey antibacterial properties keep the skin clear. Use this carefully to brighten dark spots and even your complexion.",
+      contentAr: "يعمل عصير الليمون كمبيض طبيعي وقابض للمسام، بينما تحافظ خصائص العسل المضادة للبكتيريا على نظافة البشرة. استخدمي هذه الوصفة بحذر لتفتيح البقع الداكنة وتوحيد لون بشرتك.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1529590000000-01dc93c046c?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Oatmeal & Almonds for Balanced Skin",
+      titleAr: "الشوفان واللوز للبشرة المختلطة",
+      summaryEn: "Gentle exfoliation and pore purification.",
+      summaryAr: "تقشير لطيف وتنقية المسام.",
+      contentEn: "Oatmeal is anti-inflammatory and gently exfoliates, while almond oil balances the skin's moisture levels. Perfect for sensitive or combination skin types.",
+      contentAr: "الشوفان مضاد للالتهابات ويقشر بلطف، بينما يوازن زيت اللوز مستويات رطوبة البشرة. مثالي لأنواع البشرة الحساسة أو المختلطة.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1512413316925-fd4b93f31521?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Rice Water & Honey Glow",
+      titleAr: "ماء الأرز والعسل للإشراق",
+      summaryEn: "An Asian beauty secret for smooth, radiant skin.",
+      summaryAr: "سر جمال آسيوي لبشرة ناعمة ومشرقة.",
+      contentEn: "Rice water has been used for centuries to achieve a porcelain-like complexion. Combined with honey, it provides intense radiance and refines skin texture.",
+      contentAr: "يُستخدم ماء الأرز منذ قرون للحصول على بشرة تشبه البورسلين. عند دمجه مع العسل، فإنه يوفر إشراقًا مكثفًا ويحسن ملمس البشرة.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Turmeric & Yogurt Anti-Inflammatory Mask",
+      titleAr: "قناع الكركم والزبادي المضاد للالتهابات",
+      summaryEn: "Reduce redness and boost your natural glow.",
+      summaryAr: "تقليل الاحمرار وتعزيز توهجك الطبيعي.",
+      contentEn: "Turmeric is a powerful anti-inflammatory that helps brighten skin, while the lactic acid in yogurt provides a gentle chemical exfoliation.",
+      contentAr: "الكركم مضاد قوي للالتهابات يساعد على تفتيح البشرة، بينما يوفر حمض اللاكتيك في الزيادي تقشيرًا كيميائيًا لطيفًا.",
+      category: "skincare",
+      imageUrl: "https://images.unsplash.com/photo-1616671285324-9811303fb1d9?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Argan Oil: Liquid Gold for Hair",
+      titleAr: "زيت الأرغان: الذهب السائل للشعر",
+      summaryEn: "The ultimate solution for split ends and frizz.",
+      summaryAr: "الحل الأمثل لتقصف الشعر وتجعده.",
+      contentEn: "Argan oil is packed with Vitamin E and fatty acids that deeply penetrate the hair shaft, restoring shine and preventing breakage.",
+      contentAr: "زيت الأرغان غني بفيتامين E والأحماض الدهنية التي تخترق بعمق جذع الشعرة، مما يعيد اللمعان ويمنع التقصف.",
+      category: "haircare",
+      imageUrl: "https://images.unsplash.com/photo-1608248547146-8249764b3917?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "Apple Cider Vinegar Hair Rinse",
+      titleAr: "شطف الشعر بخل التفاح",
+      summaryEn: "Restore pH balance and remove product buildup.",
+      summaryAr: "استعادة توازن درجة الحموضة وإزالة تراكم المنتجات.",
+      contentEn: "An ACV rinse closes the hair cuticle, adding incredible shine and making the hair easier to detangle. It also helps with scalp health by balancing its pH.",
+      contentAr: "شطف الشعر بخل التفاح يغلق بصيلات الشعر، مما يضيف لمعانًا مذهلاً ويجعل الشعر أسهل في فك التشابك. كما يساعد في صحة فروة الرأس من خلال موازنة درجة حموضتها.",
+      category: "haircare",
+      imageUrl: "https://images.unsplash.com/photo-1595981267035-21a4ca262621?auto=format&fit=crop&q=80"
+    });
+
+    await storage.createArticle({
+      titleEn: "The Benefits of Black Cumin Seed Oil",
+      titleAr: "فوائد زيت حبة البركة",
+      summaryEn: "An ancient remedy for skin and hair concerns.",
+      summaryAr: "علاج قديم لمشاكل البشرة والشعر.",
+      contentEn: "Known as the seed of blessing, black cumin oil is antibacterial and anti-inflammatory, making it perfect for treating acne and promoting hair growth.",
+      contentAr: "يُعرف زيت حبة البركة بأنه حبة البركة، وهو مضاد للبكتيريا والالتهابات، مما يجعله مثاليًا لعلاج حب الشباب وتعزيز نمو الشعر.",
+      category: "lifestyle",
+      imageUrl: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&q=80"
     });
 
     // 3. Routines
