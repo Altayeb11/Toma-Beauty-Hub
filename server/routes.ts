@@ -72,7 +72,7 @@ async function seedDatabase() {
       titleAr: "تعرف على المؤسسة",
       contentEn: "Our founder is passionate about holistic wellness and sustainable beauty. With years of experience in the beauty industry, she created Toma Beauty to share her knowledge and inspire women everywhere to embrace their unique beauty.",
       contentAr: "مؤسستنا شغوفة بالعافية الشاملة والجمال المستدام. مع سنوات من الخبرة في صناعة التجميل، أنشأت توما بيوتي لمشاركة معرفتها وإلهام النساء في كل مكان لاحتضان جمالهن الفريد.",
-      imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80"
     });
 
     await storage.createSection({
@@ -81,7 +81,7 @@ async function seedDatabase() {
       titleAr: "مهمتنا",
       contentEn: "To provide every woman with the knowledge and natural tools she needs to feel confident and beautiful in her own skin, using sustainable and safe ingredients.",
       contentAr: "تزويد كل امرأة بالمعرفة والأدوات الطبيعية التي تحتاجها لتشعر بالثقة والجمال في بشرتها، باستخدام مكونات مستدامة وآمنة.",
-      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80"
     });
 
     await storage.createSection({
@@ -90,7 +90,7 @@ async function seedDatabase() {
       titleAr: "رؤيتنا",
       contentEn: "To become the leading global platform for natural beauty education, bridging ancient wisdom with modern science for a healthier, more beautiful world.",
       contentAr: "أن نصبح المنصة العالمية الرائدة للتعليم في مجال الجمال الطبيعي، ونجمع بين الحكمة القديمة والعلم الحديث من أجل عالم أكثر صحة وجمالاً.",
-      imageUrl: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80"
     });
 
     // 2. Articles
@@ -157,7 +157,7 @@ async function seedDatabase() {
       contentEn: "From over-washing to using too much heat, here are common pitfalls...",
       contentAr: "من الغسيل المفرط إلى استخدام الحرارة الزائدة، إليك الأخطاء الشائعة...",
       category: "haircare",
-      imageUrl: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1516726817505-f5ed17dc40f2?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -212,7 +212,7 @@ async function seedDatabase() {
       contentEn: "Scalp exfoliation and massage can stimulate growth and reduce dandruff...",
       contentAr: "تقشير فروة الرأس وتدليكها يمكن أن يحفز النمو ويقلل من القشرة...",
       category: "haircare",
-      imageUrl: "https://images.unsplash.com/photo-1522337360788-8b13df772ad5?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1532713107108-dfb5d8d2ebe4?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -234,7 +234,7 @@ async function seedDatabase() {
       contentEn: "Cortisol can break down collagen. Learn how to de-stress for better skin...",
       contentAr: "الكورتيزول يمكن أن يحطم الكولاجين. تعلمي كيفية تخفيف التوتر لبشرة أفضل...",
       category: "lifestyle",
-      imageUrl: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -245,7 +245,7 @@ async function seedDatabase() {
       contentEn: "Using a Gua Sha or your fingers can help define your features...",
       contentAr: "استخدام الجواشا أو أصابعك يمكن أن يساعد في تحديد ملامحك...",
       category: "skincare",
-      imageUrl: "https://images.unsplash.com/photo-1591343395582-99bf4ebc046c?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -267,7 +267,7 @@ async function seedDatabase() {
       contentEn: "Natural face masks are one of the most common ways to care for your skin, treating issues like dryness, dullness, and acne. Consistency gives your skin a natural glow.",
       contentAr: "تُعد أقنعة الوجه الطبيعية من أكثر طرق العناية بالبشرة شيوعًا، لأنها تعالج مشاكل عديدة مثل الجفاف، البهتان، والحبوب. الاستمرار في استخدامها يمنح البشرة إشراقًا ونضارة طبيعية.",
       category: "skincare",
-      imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
@@ -278,7 +278,7 @@ async function seedDatabase() {
       contentEn: "Hair is exposed daily to damaging factors like heat and pollution. Natural recipes are an ideal solution to strengthen hair and stimulate growth without damage.",
       contentAr: "يتعرض الشعر يوميًا لعوامل تضر به مثل الحرارة، الصبغات، والتلوث. لذلك تُعد الوصفات الطبيعية حلًا مثاليًا لتقوية الشعر وتحفيز نموه دون إتلافه.",
       category: "haircare",
-      imageUrl: "https://images.unsplash.com/photo-1527799822367-a233b70b516e?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1444312645910-ffa973656eba?auto=format&fit=crop&q=80"
     });
 
     await storage.createArticle({
