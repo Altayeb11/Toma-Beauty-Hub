@@ -65,7 +65,11 @@ export function Footer() {
         </div>
 
         <div className="border-t border-purple-200/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
-          <p>© 2024 Toma Beauty. {t("All rights reserved.", "جميع الحقوق محفوظة.")}</p>
+          <div className="flex flex-col gap-1">
+            <p>© 2024 Toma Beauty. {t("All rights reserved.", "جميع الحقوق محفوظة.")}</p>
+            <p>{t("Website designed by Engineer Al-Tayeb Idris", "تصميم الموقع بواسطة المهندس الطيب إدريس")}</p>
+            <p>{t("Project Owner: Fatima Mohamed", "صاحبة المشروع: فاطمة محمد")}</p>
+          </div>
           <div className="flex items-center gap-1">
             <span>{t("Made with", "صنع بـ")}</span>
             <Heart className="w-3 h-3 text-red-400 fill-red-400" />
