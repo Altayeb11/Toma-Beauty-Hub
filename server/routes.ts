@@ -63,7 +63,7 @@ async function seedDatabase() {
       titleAr: "عن توما بيوتي",
       contentEn: "Toma Beauty is your ultimate destination for everything related to beauty, skincare, and self-care. We believe that true beauty comes from within, and our mission is to empower you with natural, effective, and simple routines to enhance your natural glow.",
       contentAr: "توما بيوتي هي وجهتك المثالية لكل ما يتعلق بالجمال، العناية بالبشرة، والعناية الذاتية. نؤمن بأن الجمال الحقيقي ينبع من الداخل، ومهمتنا هي تمكينك من خلال روتين طبيعي وفعال وبسيط لتعزيز إشراقتك الطبيعية.",
-      imageUrl: "https://images.unsplash.com/photo-1596462502278-27bfdd403cc2?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80"
     });
 
     await storage.createSection({
@@ -102,7 +102,8 @@ async function seedDatabase() {
       contentEn: "Coffee grounds are an incredible natural exfoliant. The caffeine helps stimulate blood flow and can temporarily reduce the appearance of cellulite, leaving your skin silky smooth.",
       contentAr: "تعتبر تفل القهوة مقشرًا طبيعيًا رائعًا. يساعد الكافيين على تحفيز تدفق الدم ويمكن أن يقلل مؤقتًا من ظهور السيلوليت، مما يترك بشرتك ناعمة كالحرير.",
       category: "skincare",
-      imageUrl: "https://images.unsplash.com/photo-1600091106710-539077977681?auto=format&fit=crop&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1559591937-e624c9629b3d?auto=format&fit=crop&q=80",
+      published: true
     });
 
     await storage.createArticle({
