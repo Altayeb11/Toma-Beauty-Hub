@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Toma Beauty - لوحة التحكم المتقدمة</title>
+        <style>
+            :root {
+                --primary: #a64d79;
+                --bg: #fff5f8;
+            }
+            body {
+                background: var(--bg);
+                font-family: "Segoe UI", sans-serif;
+                padding: 20px;
+                direction: rtl;
+            }
+            .admin-card {
+                background: white;
+                max-width: 600px;
+                margin: auto;
+                padding: 30px;
+                border-radius: 20px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            }
+            h2 {
+                color: var(--primary);
+                text-align: center;
+                margin-bottom: 25px;
+            }
+            .row {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+            input,
+            textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                outline: none;
+                transition: 0.3s;
+            }
+            input:focus {
+                border-color: var(--primary);
+            }
+            label {
+                display: block;
+                margin-top: 10px;
+                font-weight: bold;
+                color: #555;
+                font-size: 14px;
+            }
+            button {
+                width: 100%;
+                padding: 15px;
+                background: var(--primary);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+            .back-link {
+                display: block;
+                text-align: center;
+                margin-bottom: 15px;
+                color: var(--primary);
+                text-decoration: none;
+                font-size: 14px;
+            }
+            .post-item {
+                background: #fdf2f7;
+                padding: 15px;
+                margin-top: 15px;
+                border-radius: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-right: 5px solid var(--primary);
+            }
+            .del-btn {
+                background: #ff4d4d;
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="admin-card">
+            <a href="/" class="back-link">← العودة للموقع الرئيسي</a>
+            <h2>إضافة مقال (عربي / English) ✨</h2>
+
+            <form id="multi-lang-form">
+                <label>العنوان (العربية)</label>
+                <input
+                    type="text"
+                    id="titleAr"
+                    placeholder="مثلاً: روتين العناية الصباحي"
+                    required
+                />
+
+                <label>Title (English)</label>
+                <input
+                    type="text"
+                    id="titleEn"
+                    placeholder="e.g., Morning Skincare Routine"
+                    style="direction: ltr"
+                    required
+                />
+
+                <label>الوصف (العربية)</label>
+                <textarea
+                    id="descAr"
+                    rows="3"
+                    placeholder="اكتبي تفاصيل المقال..."
+                    required
+                ></textarea>
+
+                <label>Description (English)</label>
+                <textarea
+                    id="descEn"
+                    rows="3"
+                    placeholder="Enter article details..."
+                    style="direction: ltr"
+                    required
+                ></textarea>
+
+                <label>رابط الصورة</label>
+                <input
+                    type="url"
+                    id="imgUrl"
+                    placeholder="https://example.com/image.jpg"
+                />
+
+                <button type="submit">نشر المقال بكلتا اللغتين</button>
+            </form>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee" />
+            <div id="posts-list"></div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>

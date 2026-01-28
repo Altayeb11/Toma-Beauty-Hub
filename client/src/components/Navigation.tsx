@@ -11,24 +11,18 @@ export function Navigation() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // تم تعديل الرابط هنا من /#articles-section إلى /articles
   const links = [
     { href: "/", label: t("Home", "الرئيسية") },
-    { href: "/#articles-section", label: t("Articles", "المقالات") },
+    { href: "/articles", label: t("Articles", "المقالات") },
     { href: "/routines", label: t("Routines", "الروتين اليومي") },
     { href: "/remedies", label: t("Remedies", "وصفات طبيعية") },
     { href: "/about", label: t("About", "من نحن") },
   ];
 
-  const handleLinkClick = (href: string) => {
+  const handleLinkClick = () => {
     setIsOpen(false);
-    if (href === "/#articles-section") {
-      if (location === "/") {
-        const element = document.getElementById("articles-section");
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      }
-    }
+    // تم تنظيف الدالة لتعمل كروابط مباشرة فقط
   };
 
   return (
@@ -46,53 +40,60 @@ export function Navigation() {
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {links.map((link) => (
-            <Link 
-              key={link.href} 
+            <Link
+              key={link.href}
               href={link.href}
-              onClick={() => handleLinkClick(link.href)}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location === link.href ? "text-primary font-semibold" : "text-gray-600"
+              onClick={handleLinkClick}
+              className={`text-sm font-medium transition-colors hover:text-primary cursor-pointer ${
+                location === link.href
+                  ? "text-primary font-semibold"
+                  : "text-gray-600"
               }`}
             >
               {link.label}
             </Link>
           ))}
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleLanguage}
             className="font-medium text-primary hover:bg-primary/10 hover:text-primary"
           >
-            {language === 'en' ? 'العربية' : 'English'}
+            {language === "en" ? "العربية" : "English"}
           </Button>
         </div>
 
         {/* Mobile Nav */}
         <div className="md:hidden flex items-center gap-2">
-           <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleLanguage}
             className="font-medium text-primary text-xs"
           >
-            {language === 'en' ? 'AR' : 'EN'}
+            {language === "en" ? "AR" : "EN"}
           </Button>
-          
+
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side={language === 'ar' ? 'right' : 'left'} className="w-[300px] sm:w-[400px]">
+            <SheetContent
+              side={language === "ar" ? "right" : "left"}
+              className="w-[300px] sm:w-[400px]"
+            >
               <div className="flex flex-col gap-6 mt-8">
                 {links.map((link) => (
-                  <Link 
-                    key={link.href} 
+                  <Link
+                    key={link.href}
                     href={link.href}
-                    onClick={() => handleLinkClick(link.href)}
-                    className={`text-lg font-medium transition-colors hover:text-primary ${
-                      location === link.href ? "text-primary" : "text-gray-600"
+                    onClick={handleLinkClick}
+                    className={`text-lg font-medium transition-colors hover:text-primary cursor-pointer ${
+                      location === link.href
+                        ? "text-primary font-semibold"
+                        : "text-gray-600"
                     }`}
                   >
                     {link.label}
