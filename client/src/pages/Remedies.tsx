@@ -1,312 +1,222 @@
-import { useLanguage } from "@/hooks/use-language";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, Leaf, Droplets } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Droplet, Leaf, Sprout, Trash2, Key, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export default function Remedies() {
-  const { t, language } = useLanguage();
-  const [localRemedies, setLocalRemedies] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-
-  // حالة الوصفة الجديدة
-  const [newRemedy, setNewRemedy] = useState({
-    titleAr: "",
-    titleEn: "",
-    benefitsAr: "",
-    benefitsEn: "",
-    instructionsAr: "",
-    instructionsEn: "",
-    ingredientsAr: "",
+  const [items, setItems] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    shortDesc: "",
+    ingredients: "",
+    instructions: "",
   });
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("toma_remedies") || "[]");
-    setLocalRemedies(saved);
+    setIsAdmin(localStorage.getItem("toma_admin") === "true");
+    setItems(JSON.parse(localStorage.getItem("toma_remedies") || "[]"));
   }, []);
 
-  const handleAdminLogin = () => {
-    const pass = prompt(language === "ar" ? "كلمة المرور:" : "Password:");
-    if (pass === "1234") setIsAdmin(!isAdmin);
-  };
-
-  const handleAddRemedy = (e: React.FormEvent) => {
+  const saveRemedy = (e: React.FormEvent) => {
     e.preventDefault();
-    const newItem = {
-      ...newRemedy,
-      id: Date.now(),
-      // إذا كان الإنجليزي فارغاً، يستخدم العربي تلقائياً
-      titleEn: newRemedy.titleEn || newRemedy.titleAr,
-      benefitsEn: newRemedy.benefitsEn || newRemedy.benefitsAr,
-      instructionsEn: newRemedy.instructionsEn || newRemedy.instructionsAr,
-      ingredientsAr: newRemedy.ingredientsAr.split("\n"), // تحويل النص إلى قائمة
-      ingredientsEn: newRemedy.ingredientsAr.split("\n"), // حالياً نستخدم نفس القائمة للجهتين لتبسيط الإضافة
-    };
-    const updated = [newItem, ...localRemedies];
+    const updated = [{ ...formData, id: Date.now() }, ...items];
     localStorage.setItem("toma_remedies", JSON.stringify(updated));
-    setLocalRemedies(updated);
-    setShowAddForm(false);
-    setNewRemedy({
-      titleAr: "",
-      titleEn: "",
-      benefitsAr: "",
-      benefitsEn: "",
-      instructionsAr: "",
-      instructionsEn: "",
-      ingredientsAr: "",
+    setItems(updated);
+    setShowForm(false);
+    setFormData({
+      title: "",
+      shortDesc: "",
+      ingredients: "",
+      instructions: "",
     });
   };
 
-  const deleteRemedy = (id: number) => {
-    if (confirm(t("Delete?", "حذف؟"))) {
-      const updated = localRemedies.filter((r: any) => r.id !== id);
-      localStorage.setItem("toma_remedies", JSON.stringify(updated));
-      setLocalRemedies(updated);
+  const deleteItem = (id: number) => {
+    if (confirm("حذف هذه الوصفة؟")) {
+      const filtered = items.filter((i: any) => i.id !== id);
+      localStorage.setItem("toma_remedies", JSON.stringify(filtered));
+      setItems(filtered);
     }
   };
 
-  // البيانات التجريبية الأصلية + البيانات التي تضيفينها
-  const demoRemedies = [
-    {
-      id: 1,
-      titleEn: "Honey & Yogurt Mask",
-      titleAr: "قناع العسل والزبادي",
-      ingredientsAr: ["١ ملعقة عسل خام", "٢ ملعقة زبادي يوناني"],
-      ingredientsEn: ["1 tbsp raw honey", "2 tbsp greek yogurt"],
-      instructionsAr: "اخلطي جميع المكونات ووضعيها على وجه نظيف.",
-      instructionsEn: "Mix all ingredients and apply to clean face.",
-      benefitsAr: "مرطب مهدئ.",
-      benefitsEn: "Moisturizing soothing.",
-    },
-  ];
-
-  const displayRemedies = localRemedies.length ? localRemedies : demoRemedies;
-
   return (
-    <div className="min-h-screen py-24 bg-green-50/30 relative">
-      <div className="container mx-auto px-4 md:px-6">
-        {/* --- المفتاح السري (مرتفع وباهت) --- */}
-        <div className="fixed bottom-32 left-6 z-[9999] opacity-10 hover:opacity-100 transition-opacity">
-          <div className="flex flex-col-reverse gap-3 items-center">
-            <button
-              onClick={handleAdminLogin}
-              className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${isAdmin ? "bg-green-500" : "bg-[#a64d79] text-white"}`}
-            >
-              <Key className="w-5 h-5 text-white" />
-            </button>
-            {isAdmin && (
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="bg-white text-[#a64d79] p-3 rounded-xl shadow-md border border-pink-100 flex items-center gap-2 text-xs font-bold"
-              >
-                <Plus className="w-4 h-4" /> {t("Add", "إضافة")}
-              </button>
-            )}
+    <div className="min-h-screen pt-24 pb-12 bg-[#fdfdfd] text-left">
+      <div className="container mx-auto px-4">
+        <header className="text-center mb-16">
+          <div className="w-12 h-12 bg-[#f0f9f4] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Leaf className="text-[#4a9c6d] w-6 h-6" />
           </div>
-        </div>
-
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center p-3 mb-6 bg-green-100 rounded-full text-green-700">
-            <Leaf className="w-6 h-6" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 font-serif">
-            {t("Natural Remedies", "وصفات طبيعية")}
+          <h1 className="text-5xl font-bold text-[#1a1a1a] font-serif mb-4">
+            Natural Remedies
           </h1>
-        </div>
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto italic">
+            Pure, simple ingredients from your kitchen for radiant beauty.
+          </p>
+        </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayRemedies.map((remedy, i) => (
-            <div key={remedy.id} className="relative">
-              {isAdmin && (
-                <button
-                  onClick={() => deleteRemedy(remedy.id)}
-                  className="absolute -top-2 -right-2 z-20 bg-red-500 text-white p-2 rounded-full shadow-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-              <RemedyCard remedy={remedy} index={i} />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {items.map((item: any, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={item.id}
+              className="bg-white p-10 rounded-[2.5rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-[#f5f5f5] flex flex-col h-full transition-all hover:shadow-lg"
+            >
+              <div className="w-10 h-10 bg-[#f0f9f4] rounded-xl flex items-center justify-center mb-6">
+                <Leaf className="text-[#4a9c6d] w-5 h-5" />
+              </div>
+              <h3 className="text-2xl font-bold text-[#1a1a1a] font-serif mb-3 leading-tight">
+                {item.title}
+              </h3>
+              <p className="text-gray-400 text-sm mb-8 leading-relaxed italic">
+                {item.shortDesc}
+              </p>
+
+              <div className="flex items-center justify-between mt-auto">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <span className="text-[#4a9c6d] font-semibold text-sm cursor-pointer hover:underline">
+                      View Recipe
+                    </span>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md bg-white rounded-[3rem] p-8 border-none shadow-2xl overflow-y-auto max-h-[90vh]">
+                    <div className="text-center mb-6">
+                      <h2 className="text-3xl font-bold text-[#a64d79] font-serif mb-2">
+                        {item.title}
+                      </h2>
+                      <p className="text-gray-400 italic">{item.shortDesc}</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="bg-[#f0f9f4] p-6 rounded-[2rem] border border-[#e8f5ed]">
+                        <div className="flex items-center gap-2 text-[#4a9c6d] font-bold mb-4">
+                          <Leaf size={18} /> <span>Ingredients</span>
+                        </div>
+                        <ul className="space-y-3 text-gray-700">
+                          {(item.ingredients || "")
+                            .split("\n")
+                            .filter((l: any) => l.trim())
+                            .map((line: string, idx: number) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="text-[#4a9c6d] mt-1.5 w-1.5 h-1.5 rounded-full bg-[#4a9c6d] shrink-0" />
+                                <span>{line}</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                      <div className="px-2 pb-4">
+                        <div className="flex items-center gap-2 text-[#4a9c6d] font-bold mb-4">
+                          <Droplets size={18} className="text-blue-300" />{" "}
+                          <span>Instructions</span>
+                        </div>
+                        <p className="text-gray-700 leading-[1.8] whitespace-pre-line">
+                          {item.instructions || item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {isAdmin && (
+                  <button
+                    onClick={() => deleteItem(item.id)}
+                    className="text-red-100 hover:text-red-400"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
 
-      {/* نموذج الإضافة */}
+      {isAdmin && (
+        <div className="fixed bottom-10 left-6 z-[1000]">
+          <Button
+            onClick={() => setShowForm(true)}
+            className="bg-[#a64d79] w-16 h-16 rounded-full shadow-2xl border-4 border-white transition-transform active:scale-95"
+          >
+            <Plus size={35} className="text-white" />
+          </Button>
+        </div>
+      )}
+
       <AnimatePresence>
-        {showAddForm && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        {showForm && (
+          <div
+            className="fixed inset-0 bg-black/40 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm"
+            dir="rtl"
+          >
             <motion.form
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              onSubmit={handleAddRemedy}
-              className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-y-auto max-h-[90vh]"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onSubmit={saveRemedy}
+              className="bg-white w-full max-w-lg p-10 rounded-[3rem] shadow-2xl"
             >
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="absolute top-6 left-6"
-              >
-                <X />
-              </button>
-              <h2 className="text-xl font-bold text-[#a64d79] mb-6 text-center">
-                إضافة وصفة جديدة
+              <h2 className="text-2xl font-bold mb-6 text-[#a64d79] text-center font-serif">
+                إضافة وصفة جديدة ✨
               </h2>
-              <div className="space-y-3">
-                <input
-                  placeholder="اسم الوصفة بالعربي"
-                  required
-                  className="w-full p-4 bg-gray-50 rounded-2xl"
-                  value={newRemedy.titleAr}
-                  onChange={(e) =>
-                    setNewRemedy({ ...newRemedy, titleAr: e.target.value })
-                  }
-                />
-                <input
-                  placeholder="Name in English (Optional)"
-                  className="w-full p-4 bg-gray-50 rounded-2xl text-left"
-                  value={newRemedy.titleEn}
-                  onChange={(e) =>
-                    setNewRemedy({ ...newRemedy, titleEn: e.target.value })
-                  }
-                />
-                <textarea
-                  placeholder="المكونات (كل مكون في سطر)"
-                  required
-                  className="w-full p-4 bg-gray-50 rounded-2xl"
-                  value={newRemedy.ingredientsAr}
-                  onChange={(e) =>
-                    setNewRemedy({
-                      ...newRemedy,
-                      ingredientsAr: e.target.value,
-                    })
-                  }
-                />
-                <textarea
-                  placeholder="طريقة التحضير بالعربي"
-                  required
-                  className="w-full p-4 bg-gray-50 rounded-2xl"
-                  value={newRemedy.instructionsAr}
-                  onChange={(e) =>
-                    setNewRemedy({
-                      ...newRemedy,
-                      instructionsAr: e.target.value,
-                    })
-                  }
-                />
-                <textarea
-                  placeholder="Instructions in English (Optional)"
-                  className="w-full p-4 bg-gray-50 rounded-2xl text-left"
-                  value={newRemedy.instructionsEn}
-                  onChange={(e) =>
-                    setNewRemedy({
-                      ...newRemedy,
-                      instructionsEn: e.target.value,
-                    })
-                  }
-                />
-                <input
-                  placeholder="فوائد الوصفة بالعربي"
-                  required
-                  className="w-full p-4 bg-gray-50 rounded-2xl"
-                  value={newRemedy.benefitsAr}
-                  onChange={(e) =>
-                    setNewRemedy({ ...newRemedy, benefitsAr: e.target.value })
-                  }
-                />
+              <input
+                placeholder="اسم الوصفة"
+                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                required
+              />
+              <input
+                placeholder="وصف قصير"
+                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.shortDesc}
+                onChange={(e) =>
+                  setFormData({ ...formData, shortDesc: e.target.value })
+                }
+                required
+              />
+              <textarea
+                placeholder="المكونات (كل مكون في سطر)"
+                rows={3}
+                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.ingredients}
+                onChange={(e) =>
+                  setFormData({ ...formData, ingredients: e.target.value })
+                }
+                required
+              />
+              <textarea
+                placeholder="طريقة التحضير..."
+                rows={4}
+                className="w-full p-4 mb-6 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.instructions}
+                onChange={(e) =>
+                  setFormData({ ...formData, instructions: e.target.value })
+                }
+                required
+              />
+              <div className="flex gap-3">
+                <Button
+                  type="submit"
+                  className="flex-1 bg-[#4a9c6d] py-6 rounded-2xl font-bold text-white"
+                >
+                  نشر الوصفة
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  variant="ghost"
+                  className="py-6 rounded-2xl text-gray-400"
+                >
+                  إلغاء
+                </Button>
               </div>
-              <button
-                type="submit"
-                className="w-full mt-6 py-4 bg-[#a64d79] text-white rounded-2xl font-bold"
-              >
-                حفظ الوصفة ✨
-              </button>
             </motion.form>
           </div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function RemedyCard({ remedy, index }: { remedy: any; index: number }) {
-  const { t, language } = useLanguage();
-  const ingredients = Array.isArray(remedy.ingredientsAr)
-    ? language === "en"
-      ? remedy.ingredientsEn
-      : remedy.ingredientsAr
-    : [];
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all cursor-pointer border border-transparent hover:border-green-100 group"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <Sprout className="w-6 h-6" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3 font-serif">
-            {language === "en" ? remedy.titleEn : remedy.titleAr}
-          </h3>
-          <p className="text-gray-500 text-sm mb-6 line-clamp-2">
-            {language === "en" ? remedy.benefitsEn : remedy.benefitsAr}
-          </p>
-          <div className="flex items-center gap-2 text-sm font-medium text-green-700">
-            {t("View Recipe", "عرض الوصفة")}
-          </div>
-        </motion.div>
-      </DialogTrigger>
-
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-serif text-[#a64d79]">
-            {language === "en" ? remedy.titleEn : remedy.titleAr}
-          </DialogTitle>
-          <DialogDescription className="text-base text-gray-500 mt-2">
-            {language === "en" ? remedy.benefitsEn : remedy.benefitsAr}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid md:grid-cols-2 gap-8 mt-6">
-          <div className="bg-green-50/50 p-6 rounded-2xl">
-            <h4 className="font-bold text-green-800 mb-4 flex items-center gap-2">
-              <Leaf className="w-4 h-4" /> {t("Ingredients", "المكونات")}
-            </h4>
-            <ul className="space-y-2">
-              {ingredients.map((ing: string, i: number) => (
-                <li
-                  key={i}
-                  className="text-gray-700 flex items-start gap-2 text-sm"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0" />
-                  {ing}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Droplet className="w-4 h-4 text-blue-400" />{" "}
-              {t("Instructions", "طريقة التحضير")}
-            </h4>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm">
-              {language === "en"
-                ? remedy.instructionsEn
-                : remedy.instructionsAr}
-            </p>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
