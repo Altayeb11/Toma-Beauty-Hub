@@ -4,16 +4,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const render = () => {
         const posts = JSON.parse(localStorage.getItem("toma_articles") || "[]");
-        list.innerHTML = posts
-            .map(
-                (p) => `
-            <div class="post-item">
-                <span>${p.titleAr}</span>
-                <button onclick="deletePost(${p.id})" style="color:red; border:none; background:none; cursor:pointer;">حذف</button>
-            </div>
-        `,
-            )
-            .join("");
+        list.innerHTML = "";
+        posts.forEach((p) => {
+            const div = document.createElement("div");
+            div.className = "post-item";
+
+            const span = document.createElement("span");
+            span.textContent = p.titleAr;
+
+            const btn = document.createElement("button");
+            btn.textContent = "حذف";
+            btn.style.cssText = "color:red; border:none; background:none; cursor:pointer;";
+            btn.addEventListener("click", () => deletePost(p.id));
+
+            div.appendChild(span);
+            div.appendChild(btn);
+            list.appendChild(div);
+        });
     };
 
     form.onsubmit = (e) => {
