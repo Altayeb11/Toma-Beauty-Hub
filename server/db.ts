@@ -6,7 +6,7 @@ import * as schema from "@shared/schema";
  * We attempt to get the DATABASE_URL from process.env.
  * In Replit, secrets like DATABASE_URL are automatically injected into the environment.
  */
-const databaseUrl = process.env.DATABASE_URL;
+const //databaseUrl = process.env.DATABASE_URL; //
 
 function createClient() {
   // Production fallback: In Replit deployments, DATABASE_URL might not be available
