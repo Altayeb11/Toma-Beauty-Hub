@@ -1,12 +1,7 @@
-import { useLanguage } from "@/hooks/use-language";
-import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Plus, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { supabase } from '/supabase.js';
 
 export default function Articles() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [articles, setArticles] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -14,23 +9,55 @@ export default function Articles() {
 
   useEffect(() => {
     setIsAdmin(localStorage.getItem("toma_admin") === "true");
-    setArticles(JSON.parse(localStorage.getItem("toma_articles") || "[]"));
+    fetchArticles();
   }, []);
 
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updated = [{ ...newArt, id: Date.now() }, ...articles];
-    localStorage.setItem("toma_articles", JSON.stringify(updated));
-    setArticles(updated);
-    setShowForm(false);
-    setNewArt({ titleAr: "", descAr: "", image: "" });
+  const fetchArticles = async () => {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching articles:', error);
+    } else {
+      setArticles(data || []);
+    }
   };
 
-  const deleteArt = (id: number) => {
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+      .from('articles')
+      .insert([
+        { 
+          title_ar: newArt.titleAr, 
+          content_ar: newArt.descAr, 
+          image_url: newArt.image 
+        }
+      ]);
+
+    if (error) {
+      alert("Error adding article: " + error.message);
+    } else {
+      fetchArticles();
+      setShowForm(false);
+      setNewArt({ titleAr: "", descAr: "", image: "" });
+    }
+  };
+
+  const deleteArt = async (id: any) => {
     if (confirm("حذف المقال؟")) {
-      const filtered = articles.filter((a: any) => a.id !== id);
-      localStorage.setItem("toma_articles", JSON.stringify(filtered));
-      setArticles(filtered);
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert("Error deleting article: " + error.message);
+      } else {
+        fetchArticles();
+      }
     }
   };
 
@@ -145,16 +172,16 @@ function ArticleCard({ article, index }: any) {
           className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-pink-50 h-[420px] cursor-pointer flex flex-col"
         >
           <div className="h-52 overflow-hidden bg-pink-50">
-            {article.image && (
-              <img src={article.image} className="w-full h-full object-cover" />
+            {article.image_url && (
+              <img src={article.image_url} className="w-full h-full object-cover" />
             )}
           </div>
           <div className="p-6 flex flex-col flex-1">
             <h3 className="font-bold text-xl mb-3 text-gray-900 font-serif leading-tight">
-              {article.titleAr}
+              {article.title_ar}
             </h3>
             <p className="text-gray-500 text-sm line-clamp-4 italic mb-4">
-              {article.descAr}
+              {article.content_ar}
             </p>
             <div className="mt-auto text-[#a64d79] font-bold text-xs">
               اقرئي المزيد ←
@@ -167,15 +194,15 @@ function ArticleCard({ article, index }: any) {
         dir="rtl"
       >
         <div className="max-h-[85vh] overflow-y-auto">
-          {article.image && (
-            <img src={article.image} className="w-full h-72 object-cover" />
+          {article.image_url && (
+            <img src={article.image_url} className="w-full h-72 object-cover" />
           )}
           <div className="p-8">
             <h2 className="text-3xl font-bold text-[#a64d79] mb-6 font-serif">
-              {article.titleAr}
+              {article.title_ar}
             </h2>
             <p className="text-gray-700 text-lg leading-[2] whitespace-pre-line">
-              {article.descAr}
+              {article.content_ar}
             </p>
           </div>
         </div>
@@ -183,3 +210,10 @@ function ArticleCard({ article, index }: any) {
     </Dialog>
   );
 }
+
+import { useLanguage } from "@/hooks/use-language";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trash2, Plus, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";

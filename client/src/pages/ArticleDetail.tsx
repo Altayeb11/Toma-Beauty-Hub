@@ -1,15 +1,4 @@
-import { useLanguage } from "@/hooks/use-language";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Trash2,
-  Key,
-  Plus,
-  X,
-  Sparkles,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { supabase } from '/supabase.js';
 
 export default function Articles() {
   const { t, language } = useLanguage();
@@ -28,9 +17,21 @@ export default function Articles() {
   const Arrow = language === "ar" ? ArrowLeft : ArrowRight;
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("toma_articles") || "[]");
-    setLocalArticles(saved);
+    fetchArticles();
   }, []);
+
+  const fetchArticles = async () => {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching articles:', error);
+    } else {
+      setLocalArticles(data || []);
+    }
+  };
 
   const handleAdminLogin = () => {
     const pass = prompt(
@@ -43,33 +44,47 @@ export default function Articles() {
     }
   };
 
-  const handleAddArticle = (e: React.FormEvent) => {
+  const handleAddArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    // منطق ذكي: إذا كان الإنجليزي فارغاً، استخدمي العربي بدلاً منه
-    const newItem = {
-      ...newArticle,
-      id: Date.now(),
-      titleEn: newArticle.titleEn.trim() || newArticle.titleAr,
-      descEn: newArticle.descEn.trim() || newArticle.descAr,
-    };
-    const updated = [newItem, ...localArticles];
-    localStorage.setItem("toma_articles", JSON.stringify(updated));
-    setLocalArticles(updated);
-    setNewArticle({
-      titleAr: "",
-      titleEn: "",
-      descAr: "",
-      descEn: "",
-      image: "",
-    });
-    setShowAddForm(false);
+    const { data, error } = await supabase
+      .from('articles')
+      .insert([
+        {
+          title_ar: newArticle.titleAr,
+          title_en: newArticle.titleEn.trim() || newArticle.titleAr,
+          content_ar: newArticle.descAr,
+          content_en: newArticle.descEn.trim() || newArticle.descAr,
+          image_url: newArticle.image,
+        }
+      ]);
+
+    if (error) {
+      alert("Error adding article: " + error.message);
+    } else {
+      fetchArticles();
+      setNewArticle({
+        titleAr: "",
+        titleEn: "",
+        descAr: "",
+        descEn: "",
+        image: "",
+      });
+      setShowAddForm(false);
+    }
   };
 
-  const deleteArticle = (id: number) => {
+  const deleteArticle = async (id: any) => {
     if (confirm(t("Delete?", "حذف؟"))) {
-      const updated = localArticles.filter((a: any) => a.id !== id);
-      localStorage.setItem("toma_articles", JSON.stringify(updated));
-      setLocalArticles(updated);
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert("Error deleting article: " + error.message);
+      } else {
+        fetchArticles();
+      }
     }
   };
 
@@ -209,10 +224,10 @@ export default function Articles() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
-              {article.image && (
+              {article.image_url && (
                 <div className="h-52 overflow-hidden">
                   <img
-                    src={article.image}
+                    src={article.image_url}
                     className="w-full h-full object-cover"
                     alt=""
                   />
@@ -220,10 +235,10 @@ export default function Articles() {
               )}
               <div className="p-8 flex flex-col flex-1">
                 <h3 className="text-xl font-bold text-[#a64d79] mb-4">
-                  {language === "ar" ? article.titleAr : article.titleEn}
+                  {language === "ar" ? article.title_ar : article.title_en}
                 </h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-4 flex-1">
-                  {language === "ar" ? article.descAr : article.descEn}
+                  {language === "ar" ? article.content_ar : article.content_en}
                 </p>
                 <div className="text-[#a64d79] font-bold text-xs flex items-center gap-2 mt-auto">
                   {t("More", "المزيد")} <Arrow className="w-4 h-4" />
@@ -236,3 +251,16 @@ export default function Articles() {
     </div>
   );
 }
+
+import { useLanguage } from "@/hooks/use-language";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Trash2,
+  Key,
+  Plus,
+  X,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useState } from "react";

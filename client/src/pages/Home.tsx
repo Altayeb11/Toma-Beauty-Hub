@@ -1,11 +1,4 @@
-import { useLanguage } from "@/hooks/use-language";
-import { useArticles } from "@/hooks/use-content";
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Sparkles, BookOpen } from "lucide-react";
-import { Link } from "wouter";
-import { SectionCard } from "@/components/SectionCard";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { supabase } from '/supabase.js';
 
 export default function Home() {
   const { t, language } = useLanguage();
@@ -17,8 +10,18 @@ export default function Home() {
     "https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=2000&auto=format&fit=crop";
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("toma_articles") || "[]");
-    setLocalArticles(saved);
+    const fetchArticles = async () => {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+      
+      if (!error) {
+        setLocalArticles(data || []);
+      }
+    };
+    fetchArticles();
   }, []);
 
   return (
@@ -108,8 +111,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* عرض المقالات المضافة يدوياً بتنسيق ذكي */}
-            {localArticles.slice(0, 3).map((article: any, i: number) => (
+            {localArticles.map((article: any, i: number) => (
               <Link key={`local-${article.id}`} href="/articles">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -117,11 +119,10 @@ export default function Home() {
                   transition={{ delay: i * 0.1 }}
                   className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer border border-pink-50 flex flex-col h-full group min-h-[420px]"
                 >
-                  {/* التحقق من الصورة: إذا لم توجد، يظهر التصميم الملون */}
-                  {article.image && article.image.trim() !== "" ? (
+                  {article.image_url && article.image_url.trim() !== "" ? (
                     <div className="h-48 overflow-hidden">
                       <img
-                        src={article.image}
+                        src={article.image_url}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         alt=""
                       />
@@ -130,20 +131,20 @@ export default function Home() {
                     <div className="h-48 bg-gradient-to-br from-pink-100 via-purple-50 to-pink-50 flex items-center justify-center p-6 text-center relative overflow-hidden">
                       <Sparkles className="absolute top-4 right-4 text-pink-200 w-6 h-6 opacity-40" />
                       <h3 className="text-lg font-bold text-[#a64d79] font-serif leading-relaxed z-10">
-                        {language === "ar" ? article.titleAr : article.titleEn}
+                        {language === "ar" ? article.title_ar : article.title_en}
                       </h3>
                       <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/40 rounded-full blur-2xl" />
                     </div>
                   )}
 
                   <div className="p-6 flex flex-col flex-1 text-right">
-                    {article.image && article.image.trim() !== "" && (
+                    {article.image_url && article.image_url.trim() !== "" && (
                       <h3 className="text-xl font-bold text-gray-900 mb-3 font-serif">
-                        {language === "ar" ? article.titleAr : article.titleEn}
+                        {language === "ar" ? article.title_ar : article.title_en}
                       </h3>
                     )}
                     <p className="text-gray-500 text-sm mb-6 line-clamp-3 leading-relaxed flex-1 italic">
-                      {language === "ar" ? article.descAr : article.descEn}
+                      {language === "ar" ? article.content_ar : article.content_en}
                     </p>
                     <div className="text-[#a64d79] font-bold text-xs flex items-center justify-end gap-2 border-t border-pink-50 pt-4 group-hover:gap-3 transition-all">
                       {t("Read More", "اقرئي المزيد")}{" "}
@@ -154,7 +155,6 @@ export default function Home() {
               </Link>
             ))}
 
-            {/* عرض المقالات الأساسية (نفس المنطق) */}
             {articlesData
               ?.slice(0, Math.max(0, 3 - localArticles.length))
               .map((article, i) => (
@@ -187,3 +187,12 @@ export default function Home() {
     </div>
   );
 }
+
+import { useLanguage } from "@/hooks/use-language";
+import { useArticles } from "@/hooks/use-content";
+import { motion } from "framer-motion";
+import { ArrowRight, ArrowLeft, Sparkles, BookOpen } from "lucide-react";
+import { Link } from "wouter";
+import { SectionCard } from "@/components/SectionCard";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
