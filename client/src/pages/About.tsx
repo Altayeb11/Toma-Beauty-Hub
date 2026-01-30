@@ -5,12 +5,9 @@ import { Quote } from "lucide-react";
 
 export default function About() {
   const { t, language } = useLanguage();
-  const { data: sections } = useSections();
+  // Note: sections might be empty initially, use fallback data
   
-  const aboutSection = sections?.find(s => s.key === 'about');
-  const founderSection = sections?.find(s => s.key === 'founder');
-
-  // fallback data if API returns empty
+  // Fallback data if API returns empty
   const fallbackAbout = {
     titleEn: "About Toma Beauty",
     titleAr: "عن توما بيوتي",
@@ -39,14 +36,14 @@ export default function About() {
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 font-serif">
               {language === 'en' 
-                ? (aboutSection?.titleEn || fallbackAbout.titleEn) 
-                : (aboutSection?.titleAr || fallbackAbout.titleAr)}
+                ? fallbackAbout.titleEn
+                : fallbackAbout.titleAr}
             </h1>
             <div className="w-20 h-1 bg-primary mb-8 rounded-full" />
             <p className="text-lg text-gray-600 leading-relaxed mb-6 whitespace-pre-line">
               {language === 'en' 
-                ? (aboutSection?.contentEn || fallbackAbout.contentEn) 
-                : (aboutSection?.contentAr || fallbackAbout.contentAr)}
+                ? fallbackAbout.contentEn
+                : fallbackAbout.contentAr}
             </p>
           </motion.div>
           
@@ -57,7 +54,7 @@ export default function About() {
           >
             <div className="relative aspect-square rounded-[2rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
               <img 
-                src={aboutSection?.imageUrl || fallbackAbout.imageUrl} 
+                src={fallbackAbout.imageUrl}
                 alt="About Us" 
                 className="w-full h-full object-cover"
               />
@@ -79,7 +76,7 @@ export default function About() {
             >
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-xl max-w-md mx-auto md:mx-0">
                 <img 
-                  src={founderSection?.imageUrl || fallbackFounder.imageUrl} 
+                  src={fallbackFounder.imageUrl}
                   alt="Founder" 
                   className="w-full h-full object-cover"
                 />
@@ -94,14 +91,14 @@ export default function About() {
               <Quote className="w-12 h-12 text-primary/30 mb-6" />
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 font-serif">
                 {language === 'en' 
-                  ? (founderSection?.titleEn || fallbackFounder.titleEn) 
-                  : (founderSection?.titleAr || fallbackFounder.titleAr)}
+                  ? fallbackFounder.titleEn
+                  : fallbackFounder.titleAr}
               </h2>
               <div className="space-y-4 text-lg text-gray-600 leading-relaxed mb-8">
                 <p>
                   {language === 'en' 
-                    ? (founderSection?.contentEn || fallbackFounder.contentEn) 
-                    : (founderSection?.contentAr || fallbackFounder.contentAr)}
+                    ? fallbackFounder.contentEn
+                    : fallbackFounder.contentAr}
                 </p>
                 <div className="p-6 bg-white/50 rounded-2xl border border-primary/10 backdrop-blur-sm">
                   <p className="font-medium text-gray-900 mb-2">

@@ -1,43 +1,66 @@
 import { useLanguage } from "@/hooks/use-language";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Sparkles, Lock, LogOut, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Sparkles, Lock, LogOut, Heart, Mail } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/lib/supabase";
 
 export function Navigation() {
   const { language, setLanguage } = useLanguage();
   const [location] = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkAdmin = () =>
-      setIsAdmin(localStorage.getItem("toma_admin") === "true");
-    checkAdmin();
-    window.addEventListener("storage", checkAdmin);
-    return () => window.removeEventListener("storage", checkAdmin);
-  }, []);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError(null);
 
-  const handleAdminLogin = () => {
-    const pass = prompt(
-      language === "ar" ? "كلمة المرور الجميلة:" : "Enter your password:",
-    );
-    if (pass === "Toma2026") {
-      localStorage.setItem("toma_admin", "true");
-      window.dispatchEvent(new Event("storage"));
-      setShowWelcome(true);
-    } else if (pass !== null) {
-      alert(language === "ar" ? "كلمة المرور غير صحيحة" : "Incorrect password");
+    try {
+      console.log('🔐 Attempting sign-in with:', { email: loginEmail });
+      console.log('📍 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      console.log('✅ Sign-in response:', { data, error });
+
+      if (error) {
+        console.error('❌ Sign-in error:', error);
+        setLoginError(error.message);
+        return;
+      }
+
+      if (data.user) {
+        console.log('✨ Login successful:', data.user);
+        setShowLoginForm(false);
+        setLoginEmail("");
+        setLoginPassword("");
+        setShowWelcome(true);
+      }
+    } catch (err: any) {
+      console.error('💥 Unexpected error:', err);
+      setLoginError(err.message || "Failed to sign in");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("toma_admin");
-    window.dispatchEvent(new Event("storage"));
-    window.location.reload();
+    logout();
+    setShowWelcome(false);
   };
 
   const menuLinks = [
@@ -73,17 +96,24 @@ export function Navigation() {
                 {language === "en" ? "AR" : "EN"}
               </Button>
 
-              {isAdmin ? (
-                <button
-                  onClick={handleLogout}
-                  className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-500 rounded-xl shadow-sm border border-red-100"
-                >
-                  <LogOut size={18} />
-                </button>
+              {isLoading ? (
+                <div className="w-9 h-9 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 animate-pulse" />
+              ) : isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-600 px-2 py-1 bg-pink-50 rounded-lg">
+                    {user?.email?.split("@")[0]}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-500 rounded-xl shadow-sm border border-red-100 hover:bg-red-100 transition-colors"
+                  >
+                    <LogOut size={18} />
+                  </button>
+                </div>
               ) : (
                 <button
-                  onClick={handleAdminLogin}
-                  className="w-9 h-9 flex items-center justify-center bg-pink-50 text-[#a64d79] rounded-xl shadow-sm border border-pink-100"
+                  onClick={() => setShowLoginForm(true)}
+                  className="w-9 h-9 flex items-center justify-center bg-pink-50 text-[#a64d79] rounded-xl shadow-sm border border-pink-100 hover:bg-pink-100 transition-colors"
                 >
                   <Lock size={18} />
                 </button>
@@ -111,34 +141,107 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* نافذة الترحيب */}
+      {/* Login Dialog */}
+      <Dialog open={showLoginForm} onOpenChange={setShowLoginForm}>
+        <DialogContent className="max-w-[85%] md:max-w-md bg-white rounded-[2.5rem] p-10 border-none shadow-2xl outline-none">
+          <div className="sr-only">
+            <h2>{language === "ar" ? "دخول المسؤول" : "Admin Login"}</h2>
+            <p>{language === "ar" ? "تسجيل الدخول باستخدام حسابك في Supabase" : "Sign in with your Supabase account"}</p>
+          </div>
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center">
+              <Mail className="text-[#a64d79]" size={32} />
+            </div>
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-[#a64d79] mb-2 text-center">
+            {language === "ar" ? "دخول المسؤول" : "Admin Login"}
+          </h2>
+          <p className="text-gray-500 text-sm text-center mb-6">
+            {language === "ar" 
+              ? "تسجيل الدخول باستخدام حسابك في Supabase" 
+              : "Sign in with your Supabase account"}
+          </p>
+
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg text-red-700 text-sm">
+              {loginError}
+            </div>
+          )}
+
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <input
+              type="email"
+              placeholder={language === "ar" ? "البريد الإلكتروني" : "Email"}
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-[#a64d79] outline-none transition-colors"
+              required
+            />
+            <input
+              type="password"
+              placeholder={language === "ar" ? "كلمة المرور" : "Password"}
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-[#a64d79] outline-none transition-colors"
+              required
+            />
+
+            <Button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-[#a64d79] hover:bg-[#8e3e66] rounded-xl py-3 font-bold text-white disabled:opacity-50"
+            >
+              {isLoggingIn ? (
+                language === "ar" ? "جاري التسجيل..." : "Signing in..."
+              ) : (
+                language === "ar" ? "دخول" : "Sign In"
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowLoginForm(false)}
+              className="w-full text-gray-500 rounded-xl"
+            >
+              {language === "ar" ? "إلغاء" : "Cancel"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Welcome Dialog */}
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="max-w-[85%] md:max-w-md bg-white rounded-[2.5rem] p-10 border-none text-center shadow-2xl outline-none">
+          <div className="sr-only">
+            <h2>{language === "ar" ? "أهلاً بكِ يا جميلة!" : "Welcome!"}</h2>
+          </div>
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center animate-pulse">
               <Heart className="text-[#a64d79] fill-[#a64d79]" size={32} />
             </div>
           </div>
           <h2 className="text-2xl font-serif font-bold text-[#a64d79] mb-4">
-            أهلاً بكِ يا جميلة!
+            {language === "ar" ? "أهلاً بكِ يا جميلة!" : "Welcome!"}
           </h2>
           <p className="text-gray-500 leading-relaxed mb-8 italic text-sm px-4">
-            "جمالكِ يبدأ من الداخل، واليوم هو فرصة جديدة لتلهمي العالم بلمستكِ
-            الخاصة."
+            {language === "ar"
+              ? '"جمالكِ يبدأ من الداخل، واليوم هو فرصة جديدة لتلهمي العالم بلمستكِ الخاصة."'
+              : '"Beauty begins within. Today is your chance to inspire the world with your unique touch."'}
           </p>
           <div className="border-t border-pink-50 pt-4">
             <span className="text-[#a64d79] font-serif text-2xl font-bold italic block">
               Toma
             </span>
             <span className="text-[10px] text-gray-300 uppercase tracking-widest block font-bold mt-1">
-              Founder & Soul
+              {language === "ar" ? "المؤسسة" : "Founder & Soul"}
             </span>
           </div>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => setShowWelcome(false)}
             className="mt-8 bg-[#a64d79] hover:bg-[#8e3e66] w-full rounded-2xl py-7 text-lg font-bold shadow-lg transition-transform active:scale-95"
           >
-            ابدئي رحلة الجمال ✨
+            {language === "ar" ? "ابدئي رحلة الجمال ✨" : "Start Your Journey ✨"}
           </Button>
         </DialogContent>
       </Dialog>

@@ -1,40 +1,73 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@shared/routes";
-import { Section, Article, Routine, Remedy, Tip } from "@shared/schema";
+
+// Type definitions
+export interface Article {
+  id: string;
+  title: string;
+  content: string;
+  language: "en" | "ar";
+  createdAt: string;
+}
+
+export interface Routine {
+  id: string;
+  title: string;
+  description: string;
+  steps: string[];
+  language: "en" | "ar";
+  createdAt: string;
+}
+
+export interface Remedy {
+  id: string;
+  name: string;
+  description: string;
+  ingredients: string[];
+  language: "en" | "ar";
+  createdAt: string;
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface Tip {
+  id: string;
+  content: string;
+}
 
 export function useSections() {
   return useQuery({
-    queryKey: [api.sections.list.path],
+    queryKey: ["sections"],
     queryFn: async () => {
-      const res = await fetch(api.sections.list.path);
+      const res = await fetch("/api/sections");
       if (!res.ok) throw new Error("Failed to fetch sections");
-      return api.sections.list.responses[200].parse(await res.json());
+      return await res.json() as Section[];
     },
   });
 }
 
 export function useArticles() {
   return useQuery({
-    queryKey: [api.articles.list.path],
+    queryKey: ["articles"],
     queryFn: async () => {
-      const res = await fetch(api.articles.list.path);
+      const res = await fetch("/api/articles");
       if (!res.ok) throw new Error("Failed to fetch articles");
-      return api.articles.list.responses[200].parse(await res.json());
+      return await res.json() as Article[];
     },
   });
 }
 
-export function useArticle(id: number) {
+export function useArticle(id: string) {
   return useQuery({
-    queryKey: [api.articles.get.path, id],
+    queryKey: ["articles", id],
     queryFn: async () => {
-      // Manual URL construction since we don't have buildUrl helper in this context yet
-      // but in a real app, I'd use the helper.
-      const url = api.articles.get.path.replace(':id', id.toString());
-      const res = await fetch(url);
+      const res = await fetch(`/api/articles/${id}`);
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch article");
-      return api.articles.get.responses[200].parse(await res.json());
+      return await res.json() as Article;
     },
     enabled: !!id,
   });
@@ -42,33 +75,46 @@ export function useArticle(id: number) {
 
 export function useRoutines() {
   return useQuery({
-    queryKey: [api.routines.list.path],
+    queryKey: ["routines"],
     queryFn: async () => {
-      const res = await fetch(api.routines.list.path);
+      const res = await fetch("/api/routines");
       if (!res.ok) throw new Error("Failed to fetch routines");
-      return api.routines.list.responses[200].parse(await res.json());
+      return await res.json() as Routine[];
     },
+  });
+}
+
+export function useRemedy(id: string) {
+  return useQuery({
+    queryKey: ["remedies", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/remedies/${id}`);
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error("Failed to fetch remedy");
+      return await res.json() as Remedy;
+    },
+    enabled: !!id,
   });
 }
 
 export function useRemedies() {
   return useQuery({
-    queryKey: [api.remedies.list.path],
+    queryKey: ["remedies"],
     queryFn: async () => {
-      const res = await fetch(api.remedies.list.path);
+      const res = await fetch("/api/remedies");
       if (!res.ok) throw new Error("Failed to fetch remedies");
-      return api.remedies.list.responses[200].parse(await res.json());
+      return await res.json() as Remedy[];
     },
   });
 }
 
 export function useTips() {
   return useQuery({
-    queryKey: [api.tips.list.path],
+    queryKey: ["tips"],
     queryFn: async () => {
-      const res = await fetch(api.tips.list.path);
+      const res = await fetch("/api/tips");
       if (!res.ok) throw new Error("Failed to fetch tips");
-      return api.tips.list.responses[200].parse(await res.json());
+      return await res.json() as Tip[];
     },
   });
 }

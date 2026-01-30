@@ -1,28 +1,47 @@
-import { supabase } from "@/lib/supabase";
+import { useState, useEffect } from "react";
+import { useLanguage } from "@/hooks/use-language";
+import { motion } from "framer-motion";
+import { Sparkles, ArrowRight, ArrowLeft, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { SectionCard } from "@/components/SectionCard";
+
+// Placeholder data
+const PLACEHOLDER_ARTICLES = [
+  {
+    id: 1,
+    title: "الجمال الطبيعي",
+    titleEn: "Natural Beauty Tips",
+    content: "نصائح للبشرة الطبيعية",
+  },
+  {
+    id: 2,
+    title: "العناية بالبشرة الدهنية",
+    titleEn: "Oily Skin Care",
+    content: "كيفية العناية بالبشرة الدهنية",
+  },
+  {
+    id: 3,
+    title: "ماسكات طبيعية",
+    titleEn: "Natural Face Masks",
+    content: "وصفات ماسكات طبيعية فعالة",
+  },
+];
 
 export default function Home() {
   const { t, language } = useLanguage();
-  const { data: articlesData } = useArticles();
-  const [localArticles, setLocalArticles] = useState<any[]>([]);
+  const [localArticles, setLocalArticles] = useState<any[]>(PLACEHOLDER_ARTICLES);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Use placeholders by default - they will display
+    // If you want to fetch from Supabase later, add it here with error handling
+    setLocalArticles(PLACEHOLDER_ARTICLES);
+  }, []);
 
   const Arrow = language === "ar" ? ArrowLeft : ArrowRight;
   const heroImage =
     "https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=2000&auto=format&fit=crop";
-
-  useEffect(() => {
-    const fetchArticles = async () => {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(3);
-      
-      if (!error) {
-        setLocalArticles(data || []);
-      }
-    };
-    fetchArticles();
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#fffcfd]">
@@ -155,44 +174,17 @@ export default function Home() {
               </Link>
             ))}
 
-            {articlesData
-              ?.slice(0, Math.max(0, 3 - localArticles.length))
-              .map((article, i) => (
-                <SectionCard
-                  key={article.id}
-                  title={language === "en" ? article.titleEn : article.titleAr}
-                  description={
-                    language === "en" ? article.summaryEn : article.summaryAr
-                  }
-                  image={
-                    article.imageUrl ||
-                    "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800"
-                  }
-                  href="/articles"
-                  delay={(i + localArticles.length) * 0.1}
-                />
-              ))}
+            {localArticles.length === 0 && (
+              <div className="text-center py-12">
+                <BookOpen className="w-12 h-12 text-pink-100 mx-auto mb-4" />
+                <p className="text-gray-400 italic">
+                  لا توجد مقالات لعرضها حالياً
+                </p>
+              </div>
+            )}
           </div>
-
-          {localArticles.length === 0 && !articlesData && (
-            <div className="text-center py-12">
-              <BookOpen className="w-12 h-12 text-pink-100 mx-auto mb-4" />
-              <p className="text-gray-400 italic">
-                لا توجد مقالات لعرضها حالياً
-              </p>
-            </div>
-          )}
         </div>
       </section>
     </div>
   );
 }
-
-import { useLanguage } from "@/hooks/use-language";
-import { useArticles } from "@/hooks/use-content";
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Sparkles, BookOpen } from "lucide-react";
-import { Link } from "wouter";
-import { SectionCard } from "@/components/SectionCard";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";

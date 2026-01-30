@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: #fffcfd;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
 :root {
   /* H S% L% format */
   --background: 300 33% 98%;      /* Very soft pinkish white */
