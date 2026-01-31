@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { motion } from "framer-motion";
-import { Sun, Moon, Clock, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { Sun, Moon, Clock, Plus, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { useAdmin } from "@/hooks/use-admin";
 
 export default function Routines() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [routines, setRoutines] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -26,28 +26,22 @@ export default function Routines() {
   });
 
   useEffect(() => {
-    checkAuthAndLoadRoutines();
+    loadRoutines();
   }, []);
 
-  const checkAuthAndLoadRoutines = async () => {
+  const loadRoutines = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Check Supabase auth status
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      setIsAdmin(!!user && !authError);
-      
-      // Fetch routines directly from Supabase
-      const { data, error } = await supabase
+      const { data: routinesData, error: routinesError } = await supabase
         .from("routines")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw new Error(error.message);
-      setRoutines(data || []);
+      if (routinesError) throw new Error(routinesError.message);
+      setRoutines(routinesData || []);
     } catch (err: any) {
-      console.error("Error loading routines:", err);
+      console.error(err);
       setError(err.message || "Failed to load routines");
       setRoutines([]);
     } finally {
@@ -64,7 +58,6 @@ export default function Routines() {
         return;
       }
 
-      // Parse steps
       const stepsAr = formData.stepsAr.split("\n").filter(Boolean);
       const stepsEn = formData.stepsEn.split("\n").filter(Boolean);
 
@@ -73,6 +66,7 @@ export default function Routines() {
         return;
       }
 
+      // 1️⃣ حفظ الروتين في جدول routines
       const routineData = {
         title: formData.titleAr || formData.titleEn,
         description: formData.descriptionAr || formData.descriptionEn,
@@ -80,14 +74,29 @@ export default function Routines() {
         routine_type: formData.type,
       };
 
-      // Save to database
-      const { data: newRoutine, error } = await supabase
+      const { data: newRoutine, error: routineError } = await supabase
         .from("routines")
         .insert([routineData])
         .select()
         .single();
 
-      if (error) throw new Error(error.message);
+      if (routineError) throw new Error(routineError.message);
+
+      const routineId = newRoutine.id;
+
+      // 2️⃣ حفظ كل خطوة في جدول routine_steps
+      const stepsData: any[] = stepsAr.map((title, index) => ({
+        routine_id: routineId,
+        step_order: index + 1,
+        title: title,
+        content: stepsEn[index] || "",
+      }));
+
+      const { error: stepsError } = await supabase
+        .from("routine_steps")
+        .insert(stepsData);
+
+      if (stepsError) throw new Error(stepsError.message);
 
       setRoutines([newRoutine, ...routines]);
       setShowForm(false);
@@ -101,25 +110,22 @@ export default function Routines() {
         type: "morning",
       });
     } catch (err: any) {
-      setError(err.message || "Failed to create routine");
+      console.error(err);
+      setError(err.message || "Failed to save routine");
     }
   };
 
-  const deleteRoutine = async (id: number) => {
-    if (confirm("حذف هذا الروتين؟")) {
-      try {
-        setError(null);
-        const { error } = await supabase
-          .from("routines")
-          .delete()
-          .eq("id", id);
-
-        if (error) throw new Error(error.message);
-
-        setRoutines(routines.filter((r: any) => r.id !== id));
-      } catch (err: any) {
-        setError(err.message || "Failed to delete routine");
-      }
+  const deleteRoutine = async (id: string) => {
+    if (!confirm("حذف هذا الروتين؟")) return;
+    try {
+      // حذف الخطوات أولاً
+      await supabase.from("routine_steps").delete().eq("routine_id", id);
+      // حذف الروتين
+      const { error } = await supabase.from("routines").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+      setRoutines(routines.filter(r => r.id !== id));
+    } catch (err: any) {
+      setError(err.message || "Failed to delete routine");
     }
   };
 
@@ -131,10 +137,7 @@ export default function Routines() {
             {t("Daily Routines", "الروتين اليومي")}
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-            {t(
-              "Consistent habits for healthy, radiant skin.",
-              "عادات مستمرة لبشرة صحية ومشرقة."
-            )}
+            {t("Consistent habits for healthy, radiant skin.", "عادات مستمرة لبشرة صحية ومشرقة.")}
           </p>
         </div>
 
@@ -145,25 +148,17 @@ export default function Routines() {
         )}
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">جاري تحميل الروتينات...</p>
-          </div>
+          <div className="text-center py-12 text-gray-500">جاري تحميل الروتينات...</div>
         ) : (
           <Tabs defaultValue="morning" className="max-w-4xl mx-auto">
             <TabsList className="grid w-full grid-cols-2 h-16 rounded-full bg-white p-2 shadow-sm mb-12">
-              <TabsTrigger 
-                value="morning" 
-                className="rounded-full text-base data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:shadow-none transition-all"
-              >
+              <TabsTrigger value="morning">
                 <div className="flex items-center gap-2">
                   <Sun className="w-5 h-5" />
                   {t("Morning Routine", "روتين الصباح")}
                 </div>
               </TabsTrigger>
-              <TabsTrigger 
-                value="evening" 
-                className="rounded-full text-base data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none transition-all"
-              >
+              <TabsTrigger value="evening">
                 <div className="flex items-center gap-2">
                   <Moon className="w-5 h-5" />
                   {t("Evening Routine", "روتين المساء")}
@@ -173,49 +168,16 @@ export default function Routines() {
 
             <TabsContent value="morning">
               <div className="grid gap-8">
-                {routines.filter(r => r.routine_type === 'morning').length === 0 ? (
-                  <div className="text-center text-gray-500 py-12">
-                    لا توجد روتينات صباحية حالياً
-                  </div>
-                ) : (
-                  routines.filter(r => r.routine_type === 'morning').map((routine) => (
-                    <div key={routine.id} className="relative">
-                      {isAdmin && (
-                        <button
-                          onClick={() => deleteRoutine(routine.id)}
-                          className="absolute top-4 left-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                      <RoutineCard routine={routine} type="morning" />
-                    </div>
-                  ))
-                )}
+                {routines.filter(r => r.routine_type === 'morning').map(r => (
+                  <RoutineCard key={r.id} routine={r} type="morning" isAdmin={isAdmin} deleteRoutine={deleteRoutine}/>
+                ))}
               </div>
             </TabsContent>
-
             <TabsContent value="evening">
               <div className="grid gap-8">
-                {routines.filter(r => r.routine_type === 'evening').length === 0 ? (
-                  <div className="text-center text-gray-500 py-12">
-                    لا توجد روتينات مسائية حالياً
-                  </div>
-                ) : (
-                  routines.filter(r => r.routine_type === 'evening').map((routine) => (
-                    <div key={routine.id} className="relative">
-                      {isAdmin && (
-                        <button
-                          onClick={() => deleteRoutine(routine.id)}
-                          className="absolute top-4 left-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                      <RoutineCard routine={routine} type="evening" />
-                    </div>
-                  ))
-                )}
+                {routines.filter(r => r.routine_type === 'evening').map(r => (
+                  <RoutineCard key={r.id} routine={r} type="evening" isAdmin={isAdmin} deleteRoutine={deleteRoutine}/>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
@@ -224,10 +186,7 @@ export default function Routines() {
 
       {isAdmin && (
         <div className="fixed bottom-10 left-6 z-[1000]">
-          <Button
-            onClick={() => setShowForm(true)}
-            className="bg-[#4a9c6d] w-16 h-16 rounded-full shadow-2xl border-4 border-white"
-          >
+          <Button onClick={() => setShowForm(true)} className="bg-[#4a9c6d] w-16 h-16 rounded-full shadow-2xl border-4 border-white">
             <Plus size={35} />
           </Button>
         </div>
@@ -235,7 +194,12 @@ export default function Routines() {
 
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
             <motion.form
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -254,145 +218,103 @@ export default function Routines() {
                 </div>
               )}
 
-              <input
-                placeholder="اسم الروتين (عربي) *"
-                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
-                value={formData.titleAr}
-                onChange={(e) =>
-                  setFormData({ ...formData, titleAr: e.target.value })
-                }
-                required
-              />
-              <input
-                placeholder="Routine Name (English) *"
-                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
-                dir="ltr"
-                value={formData.titleEn}
-                onChange={(e) =>
-                  setFormData({ ...formData, titleEn: e.target.value })
-                }
-                required
-              />
-
-              <textarea
-                placeholder="وصف قصير (عربي)"
-                rows={2}
-                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
-                value={formData.descriptionAr}
-                onChange={(e) =>
-                  setFormData({ ...formData, descriptionAr: e.target.value })
-                }
-              />
-              <textarea
-                placeholder="Short Description (English)"
-                rows={2}
-                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
-                dir="ltr"
-                value={formData.descriptionEn}
-                onChange={(e) =>
-                  setFormData({ ...formData, descriptionEn: e.target.value })
-                }
-              />
-
-              <textarea
-                placeholder="الخطوات (عربي - كل خطوة في سطر) *"
-                rows={4}
-                className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
-                value={formData.stepsAr}
-                onChange={(e) =>
-                  setFormData({ ...formData, stepsAr: e.target.value })
-                }
-                required
-              />
-              <textarea
-                placeholder="Steps (English - one per line) *"
-                rows={4}
-                className="w-full p-4 mb-6 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
-                dir="ltr"
-                value={formData.stepsEn}
-                onChange={(e) =>
-                  setFormData({ ...formData, stepsEn: e.target.value })
-                }
-                required
-              />
-
+              <input placeholder="اسم الروتين (عربي) *" className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.titleAr} onChange={e => setFormData({...formData, titleAr: e.target.value})} required />
+              <input placeholder="Routine Name (English) *" className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
+                dir="ltr" value={formData.titleEn} onChange={e => setFormData({...formData, titleEn: e.target.value})} required />
+              <textarea placeholder="وصف قصير (عربي)" rows={2} className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.descriptionAr} onChange={e => setFormData({...formData, descriptionAr: e.target.value})} />
+              <textarea placeholder="Short Description (English)" rows={2} className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
+                dir="ltr" value={formData.descriptionEn} onChange={e => setFormData({...formData, descriptionEn: e.target.value})} />
+              <textarea placeholder="الخطوات (عربي - كل خطوة في سطر) *" rows={4} className="w-full p-4 mb-3 bg-[#f9f9f9] rounded-2xl border-none outline-none"
+                value={formData.stepsAr} onChange={e => setFormData({...formData, stepsAr: e.target.value})} required />
+              <textarea placeholder="Steps (English - one per line) *" rows={4} className="w-full p-4 mb-6 bg-[#f9f9f9] rounded-2xl border-none outline-none text-left"
+                dir="ltr" value={formData.stepsEn} onChange={e => setFormData({...formData, stepsEn: e.target.value})} required />
               <div className="w-full p-4 mb-6 bg-[#f9f9f9] rounded-2xl">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  نوع الروتين / Routine Type *
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none"
-                  required
-                >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">نوع الروتين / Routine Type *</label>
+                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none" required>
                   <option value="morning">صباحي / Morning</option>
                   <option value="evening">مسائي / Evening</option>
                 </select>
               </div>
-
               <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  className="flex-1 bg-[#4a9c6d] py-6 rounded-2xl font-bold text-white"
-                >
-                  نشر الروتين
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  variant="ghost"
-                  className="py-6 rounded-2xl text-gray-400"
-                >
-                  إلغاء
-                </Button>
+                <Button type="submit" className="flex-1 bg-[#4a9c6d] py-6 rounded-2xl font-bold text-white">نشر الروتين</Button>
+                <Button type="button" variant="ghost" className="py-6 rounded-2xl text-gray-400" onClick={() => setShowForm(false)}>إلغاء</Button>
               </div>
             </motion.form>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-function RoutineCard({ routine, type }: { routine: any, type: 'morning' | 'evening' }) {
-  const { language } = useLanguage();
-  
-  const theme = type === 'morning' 
-    ? { bg: 'bg-orange-50', border: 'border-orange-100', icon: 'text-orange-500', stepBg: 'bg-white' } 
-    : { bg: 'bg-indigo-50', border: 'border-indigo-100', icon: 'text-indigo-500', stepBg: 'bg-white' };
+function RoutineCard({ routine, type, isAdmin, deleteRoutine }: any) {
+  const [showSteps, setShowSteps] = useState(false);
+  const [steps, setSteps] = useState<any[]>([]);
+
+  const loadSteps = async () => {
+    const { data, error } = await supabase
+      .from("routine_steps")
+      .select("*")
+      .eq("routine_id", routine.id)
+      .order("step_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setSteps(data || []);
+  };
+
+  const toggleSteps = async () => {
+    if (!showSteps) await loadSteps();
+    setShowSteps(!showSteps);
+  };
+
+  const theme = type === "morning"
+    ? { bg: "bg-orange-50", border: "border-orange-100", icon: "text-orange-500", stepBg: "bg-white" }
+    : { bg: "bg-indigo-50", border: "border-indigo-100", icon: "text-indigo-500", stepBg: "bg-white" };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`rounded-3xl p-8 md:p-12 ${theme.bg} border ${theme.border} relative overflow-hidden`}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`rounded-3xl p-8 md:p-12 ${theme.bg} border ${theme.border} relative overflow-hidden`}>
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-      
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              {routine.title}
-            </h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{routine.title}</h3>
             <div className="flex items-center gap-2 text-gray-500 text-sm">
               <Clock className="w-4 h-4" />
-              <span>{routine.description || 'روتين جمالي'}</span>
+              <span>{routine.description || "روتين جمالي"}</span>
             </div>
           </div>
           <div className={`p-3 rounded-full bg-white shadow-sm ${theme.icon}`}>
-            {type === 'morning' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+            {type === "morning" ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
           </div>
         </div>
 
-        <div className="space-y-4">
+        <Button onClick={toggleSteps} className="mb-4">
+          {showSteps ? "اخفاء الخطوات" : "عرض الخطوات"}
+        </Button>
+
+        {showSteps && steps.length === 0 && (
           <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm">
-            (خطوات الروتين يتم تخزينها بشكل منفصل في النظام)
+            لا توجد خطوات حالياً
           </div>
-        </div>
+        )}
+
+        {showSteps && steps.map((step: any) => (
+          <div key={step.id} className="p-4 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm mb-2">
+            <strong>{step.step_order}. {step.title}</strong>
+            <p>{step.content}</p>
+          </div>
+        ))}
+
+        {isAdmin && (
+          <button onClick={() => deleteRoutine(routine.id)} className="absolute top-4 left-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
     </motion.div>
   );

@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 
+
 export function Navigation() {
   const { language, setLanguage } = useLanguage();
   const [location] = useLocation();
@@ -95,6 +96,8 @@ export function Navigation() {
               >
                 {language === "en" ? "AR" : "EN"}
               </Button>
+
+
 
               {isLoading ? (
                 <div className="w-9 h-9 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 animate-pulse" />

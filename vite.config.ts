@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  appType: 'spa',
   plugins: [react()],
   resolve: {
     alias: {
@@ -18,5 +19,8 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "../dist/public"),
     emptyOutDir: true,
+  },
+  server: {
+    historyApiFallback: true,
   },
 });

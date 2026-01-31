@@ -1,9 +1,14 @@
 import { supabase } from "@/lib/supabase";
+import { useAdmin } from "@/hooks/use-admin";
+import { useLanguage } from "@/hooks/use-language";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus, Key, Trash2, ArrowRight } from "lucide-react";
 
 export default function Articles() {
   const { t, language } = useLanguage();
+  const { isAdmin, setAdmin } = useAdmin();
   const [localArticles, setLocalArticles] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [newArticle, setNewArticle] = useState({
@@ -14,10 +19,8 @@ export default function Articles() {
     image: "",
   });
 
-  const Arrow = language === "ar" ? ArrowLeft : ArrowRight;
 
   useEffect(() => {
-    setIsAdmin(true); // Forced for now as requested
     fetchArticles();
   }, []);
 
@@ -35,13 +38,20 @@ export default function Articles() {
   };
 
   const handleAdminLogin = () => {
-    const pass = prompt(
-      language === "ar" ? "أدخل كلمة المرور:" : "Enter Password:",
-    );
-    if (pass === "1234") {
-      setIsAdmin(!isAdmin);
+    if (!isAdmin) {
+      const pass = prompt(
+        language === "ar" ? "أدخل كلمة المرور:" : "Enter Password:",
+      );
+      if (pass === "1234") {
+        setAdmin(true);
+        alert(language === "ar" ? "تم تفعيل وضع المسؤول" : "Admin mode enabled");
+      } else {
+        alert(language === "ar" ? "خطأ!" : "Wrong!");
+      }
     } else {
-      alert(language === "ar" ? "خطأ!" : "Wrong!");
+      if (confirm(language === "ar" ? "هل تريد الخروج من وضع المسؤول؟" : "Sign out of admin mode?")) {
+        setAdmin(false);
+      }
     }
   };
 
@@ -75,6 +85,11 @@ export default function Articles() {
   };
 
   const deleteArticle = async (id: any) => {
+    if (!isAdmin) {
+      alert("غير مصرح");
+      return;
+    }
+
     if (confirm(t("Delete?", "حذف؟"))) {
       const { error } = await supabase
         .from('articles')
@@ -242,7 +257,7 @@ export default function Articles() {
                   {language === "ar" ? article.content_ar : article.content_en}
                 </p>
                 <div className="text-[#a64d79] font-bold text-xs flex items-center gap-2 mt-auto">
-                  {t("More", "المزيد")} <Arrow className="w-4 h-4" />
+                  {t("More", "المزيد")} <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
@@ -253,15 +268,3 @@ export default function Articles() {
   );
 }
 
-import { useLanguage } from "@/hooks/use-language";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Trash2,
-  Key,
-  Plus,
-  X,
-  Sparkles,
-} from "lucide-react";
-import { useEffect, useState } from "react";

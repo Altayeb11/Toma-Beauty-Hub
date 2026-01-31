@@ -3,13 +3,14 @@ import { useLanguage } from "@/hooks/use-language";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { useAdmin } from "@/hooks/use-admin";
 
 export default function Articles() {
   const { t, language } = useLanguage();
+  const { isAdmin } = useAdmin();
   const [articles, setArticles] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,15 +30,10 @@ export default function Articles() {
     try {
       setLoading(true);
       setError(null);
-      
-      // Check Supabase auth status
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      setIsAdmin(!!user && !authError);
-      
-      // Fetch articles directly from Supabase with image data
+
       const { data, error } = await supabase
         .from("articles")
-        .select("*, images:hero_image_id(url)")
+        .select(`*, image:images(url)`)
         .order("created_at", { ascending: false });
 
       if (error) throw new Error(error.message);
@@ -65,17 +61,14 @@ export default function Articles() {
       
       let imageRecord = null;
       
-      // If image URL provided, download and cache it
       if (newArt.image.trim()) {
         try {
-          // Download image from URL
           const response = await fetch(newArt.image);
           if (!response.ok) throw new Error("Failed to fetch image");
           
           const blob = await response.blob();
           const fileName = `cached-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
           
-          // Upload to Supabase Storage
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from("article-images")
             .upload(fileName, blob, {
@@ -85,12 +78,10 @@ export default function Articles() {
 
           if (uploadError) throw uploadError;
 
-          // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from("article-images")
             .getPublicUrl(fileName);
 
-          // Create image record in database
           const { data: img, error: imgError } = await supabase
             .from("images")
             .insert([{
@@ -139,6 +130,11 @@ export default function Articles() {
   };
 
   const deleteArt = async (id: any) => {
+    if (!isAdmin) {
+      setError("غير مصرح");
+      return;
+    }
+
     if (!confirm("حذف المقال؟")) return;
 
     setError(null);
@@ -157,11 +153,11 @@ export default function Articles() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 bg-[#fffcfd] text-right" dir="rtl">
+    <div className="min-h-screen pt-24 pb-12 bg-[#fffcfd]" dir={language === "ar" ? "rtl" : "ltr"}>
       <div className="container mx-auto px-4">
         <header className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-[#a64d79] font-serif">
-            مقالات الجمال
+            {language === "ar" ? "مقالات الجمال" : "Beauty Articles"}
           </h1>
           <div className="h-1.5 w-20 bg-pink-200 mx-auto rounded-full mt-4" />
         </header>
@@ -185,15 +181,18 @@ export default function Articles() {
             ) : (
               articles.map((art: any, i: number) => (
                 <div key={art.id} className="relative">
+                  {/* تعديل: زر الحذف ثابت ومرئي دائمًا */}
                   {isAdmin && (
-                    <button
-                      onClick={() => deleteArt(art.id)}
-                      className="absolute top-4 left-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="absolute top-4 left-4 z-[999] pointer-events-auto">
+                      <button
+                        onClick={() => deleteArt(art.id)}
+                        className="bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   )}
-                  <ArticleCard article={art} index={i} />
+                  <ArticleCard article={art} index={i} language={language} />
                 </div>
               ))
             )}
@@ -302,7 +301,12 @@ export default function Articles() {
   );
 }
 
-function ArticleCard({ article, index }: any) {
+function ArticleCard({ article, index, language }: any) {
+  const title = language === "ar" ? (article.title_ar || article.title) : (article.title_en || article.title);
+  const content = language === "ar" ? (article.content_ar || article.description || article.body) : (article.content_en || article.description || article.body);
+
+  const imageUrl = article.image?.url || '';
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -310,40 +314,48 @@ function ArticleCard({ article, index }: any) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-pink-50 h-[420px] cursor-pointer flex flex-col"
+          className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-pink-50 h-[420px] cursor-pointer flex flex-col group pointer-events-auto"
         >
-          <div className="h-52 overflow-hidden bg-pink-50">
-            {article.images?.[0]?.url && (
-              <img src={article.images[0].url} className="w-full h-full object-cover" />
+          <div className="h-52 overflow-hidden bg-pink-50 relative z-50">
+            {imageUrl && imageUrl.trim() !== "" ? (
+              <img src={imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt={title} loading="lazy" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-pink-100 via-purple-50 to-pink-50 flex items-center justify-center p-4 text-center">
+                <h3 className="text-lg font-bold text-[#a64d79] font-serif">
+                  {title}
+                </h3>
+              </div>
             )}
           </div>
-          <div className="p-6 flex flex-col flex-1">
+          <div className="p-6 flex flex-col flex-1 relative">
             <h3 className="font-bold text-xl mb-3 text-gray-900 font-serif leading-tight">
-              {article.title}
+              {title}
             </h3>
-            <p className="text-gray-500 text-sm line-clamp-4 italic mb-4">
-              {article.description}
+            <p className="text-gray-600 text-sm line-clamp-4 mb-4">
+              {content}
             </p>
             <div className="mt-auto text-[#a64d79] font-bold text-xs">
-              اقرئي المزيد ←
+              {language === "ar" ? "اقرئي المزيد ←" : "Read More →"}
             </div>
           </div>
         </motion.div>
       </DialogTrigger>
       <DialogContent
-        className="max-w-3xl bg-white rounded-[2.5rem] p-0 overflow-hidden text-right"
-        dir="rtl"
+        className="max-w-3xl bg-white rounded-[2.5rem] p-0 overflow-hidden"
+        dir={language === "ar" ? "rtl" : "ltr"}
       >
-        <div className="max-h-[85vh] overflow-y-auto">
-          {article.images?.[0]?.url && (
-            <img src={article.images[0].url} className="w-full h-72 object-cover" />
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+        <DialogDescription className="sr-only">{content}</DialogDescription>
+        <div className="max-h-[85vh] overflow-y-auto relative">
+          {imageUrl && imageUrl.trim() !== "" && (
+            <img src={imageUrl} className="w-full h-72 object-cover" alt={title} loading="lazy" />
           )}
           <div className="p-8">
             <h2 className="text-3xl font-bold text-[#a64d79] mb-6 font-serif">
-              {article.title}
+              {title}
             </h2>
             <p className="text-gray-700 text-lg leading-[2] whitespace-pre-line">
-              {article.body || article.description}
+              {content}
             </p>
           </div>
         </div>
